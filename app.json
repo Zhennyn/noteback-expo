@@ -1,25 +1,42 @@
 {
   "expo": {
-    "name": "noteback-expo",
+    "name": "NoteBack",
     "slug": "noteback-expo",
     "version": "1.0.0",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#060B18",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#060B18",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "permissions": ["CAMERA"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir que o NoteBack acesse sua câmera para escanear notas fiscais."
+        }
+      ]
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/noteback-expo"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }
