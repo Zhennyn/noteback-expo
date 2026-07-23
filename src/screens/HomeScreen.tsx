@@ -13,7 +13,7 @@ export function HomeScreen() {
         <TouchableOpacity style={styles.headerBtn}>
           <Ionicons name="menu" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.logo}>NoteBack</Text>
+        <Text style={styles.logo}>WGR</Text>
         <TouchableOpacity style={styles.headerBtn}>
           <Ionicons name="notifications-outline" size={24} color="#fff" />
           <View style={styles.notifBadge}>

@@ -15,7 +15,7 @@ export interface Promotion {
 // 1. Rode: npx vercel (na pasta do projeto)
 // 2. Copie a URL gerada (ex: https://noteback-expo.vercel.app)
 // 3. Cole abaixo:
-const API_URL = 'https://SEU-PROJETO.vercel.app/api/promocoes';
+const API_URL = 'https://noteback-expo.vercel.app/api/promocoes';
 // =============================================================
 
 // Dados de fallback caso o servidor esteja offline
