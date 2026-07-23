@@ -7,16 +7,32 @@ import { Promotion, fetchPromotions } from '../services/scraping/promotionsScrap
 export function PromotionsScreen() {
   const navigation = useNavigation();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('Todas');
+
+  const categories = [
+    'Todas', 'Alimentos', 'Laticínios', 'Açougue e Frios', 
+    'Limpeza', 'Higiene e Perfumaria', 'Bebidas', 'Hortifruti', 'Outros'
+  ];
 
   useEffect(() => {
     loadPromotions();
   }, []);
 
+  useEffect(() => {
+    if (activeCategory === 'Todas') {
+      setFilteredPromotions(promotions);
+    } else {
+      setFilteredPromotions(promotions.filter(p => p.category === activeCategory));
+    }
+  }, [activeCategory, promotions]);
+
   const loadPromotions = async () => {
     setLoading(true);
     const data = await fetchPromotions();
     setPromotions(data);
+    setFilteredPromotions(data);
     setLoading(false);
   };
 
@@ -62,19 +78,39 @@ export function PromotionsScreen() {
         <Text style={styles.bannerText}>Ofertas de 10 mercados atualizadas em tempo real</Text>
       </View>
 
+      <View style={styles.categoriesWrapper}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={categories}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.categoriesList}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              style={[styles.catBtn, activeCategory === item && styles.catBtnActive]}
+              onPress={() => setActiveCategory(item)}
+            >
+              <Text style={[styles.catText, activeCategory === item && styles.catTextActive]}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#60A5FA" />
           <Text style={styles.loadingText}>Buscando as melhores ofertas...</Text>
         </View>
-      ) : promotions.length === 0 ? (
+      ) : filteredPromotions.length === 0 ? (
         <View style={styles.center}>
           <Ionicons name="sad-outline" size={48} color="#475569" />
-          <Text style={styles.emptyText}>Nenhuma promoção encontrada no momento.</Text>
+          <Text style={styles.emptyText}>Nenhuma promoção encontrada nesta categoria.</Text>
         </View>
       ) : (
         <FlatList
-          data={promotions}
+          data={filteredPromotions}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
@@ -119,6 +155,33 @@ const styles = StyleSheet.create({
     color: '#F59E0B',
     fontSize: 13,
     flex: 1,
+  },
+  categoriesWrapper: {
+    marginBottom: 16,
+  },
+  categoriesList: {
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  catBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#0F1629',
+    borderWidth: 1,
+    borderColor: '#1E2740',
+  },
+  catBtnActive: {
+    backgroundColor: '#60A5FA',
+    borderColor: '#60A5FA',
+  },
+  catText: {
+    color: '#94A3B8',
+    fontSize: 14,
+  },
+  catTextActive: {
+    color: '#fff',
+    fontWeight: '600',
   },
   center: {
     flex: 1,

@@ -84,6 +84,18 @@ const MARKETS = [
   },
 ];
 
+function categorize(title) {
+  const t = title.toLowerCase();
+  if (t.includes('arroz') || t.includes('feijão') || t.includes('macarrão') || t.includes('óleo') || t.includes('café') || t.includes('açúcar') || t.includes('farinha') || t.includes('biscoito') || t.includes('salgadinho') || t.includes('azeite')) return 'Alimentos';
+  if (t.includes('leite') || t.includes('queijo') || t.includes('manteiga') || t.includes('iogurte') || t.includes('requeijão') || t.includes('margarina')) return 'Laticínios';
+  if (t.includes('carne') || t.includes('frango') || t.includes('peixe') || t.includes('linguiça') || t.includes('salsicha') || t.includes('bovina') || t.includes('suína') || t.includes('hambúrguer') || t.includes('nuggets')) return 'Açougue e Frios';
+  if (t.includes('sabão') || t.includes('detergente') || t.includes('amaciante') || t.includes('desinfetante') || t.includes('limpeza') || t.includes('esponja') || t.includes('água sanitária')) return 'Limpeza';
+  if (t.includes('shampoo') || t.includes('sabonete') || t.includes('desodorante') || t.includes('creme') || t.includes('papel higiênico') || t.includes('fralda') || t.includes('pasta de dente') || t.includes('absorvente')) return 'Higiene e Perfumaria';
+  if (t.includes('cerveja') || t.includes('refrigerante') || t.includes('suco') || t.includes('água') || t.includes('vinho') || t.includes('vodka') || t.includes('energético')) return 'Bebidas';
+  if (t.includes('maçã') || t.includes('banana') || t.includes('tomate') || t.includes('batata') || t.includes('cebola') || t.includes('fruta') || t.includes('legume') || t.includes('limão') || t.includes('alho')) return 'Hortifruti';
+  return 'Outros';
+}
+
 async function scrapeMarket(market) {
   try {
     const response = await axios.get(market.url, {
@@ -100,7 +112,7 @@ async function scrapeMarket(market) {
     const products = [];
 
     $(market.itemSelector).each((i, el) => {
-      if (i >= 5) return;
+      if (i >= 20) return; // Ampliado de 5 para 20 itens por mercado
 
       const title = $(el).find(market.titleSelector).text().trim();
       const price = $(el).find(market.priceSelector).text().trim();
@@ -112,7 +124,7 @@ async function scrapeMarket(market) {
           title: title,
           price: price.startsWith('R$') ? price : 'R$ ' + price,
           store: market.name,
-          category: 'Oferta',
+          category: categorize(title),
           imageUrl: imageUrl && imageUrl.startsWith('http') ? imageUrl : undefined,
         });
       }
