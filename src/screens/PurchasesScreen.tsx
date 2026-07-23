@@ -1,31 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-interface Purchase {
-  id: string;
-  store: string;
-  date: string;
-  total: string;
-  items: number;
-  color: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
-
-const mockPurchases: Purchase[] = [
-  { id: '1', store: 'Carrefour', date: '20/05/2024', total: 'R$ 320,50', items: 3, color: '#1E40AF', icon: 'cart' },
-  { id: '2', store: 'Assaí Atacadista', date: '18/05/2024', total: 'R$ 215,80', items: 7, color: '#DC2626', icon: 'storefront' },
-  { id: '3', store: 'Extra Mercado', date: '15/05/2024', total: 'R$ 158,40', items: 5, color: '#EAB308', icon: 'basket' },
-  { id: '4', store: 'Pão de Açúcar', date: '10/05/2024', total: 'R$ 274,20', items: 6, color: '#16A34A', icon: 'bag-handle' },
-  { id: '5', store: 'Atacadão', date: '08/05/2024', total: 'R$ 412,30', items: 12, color: '#0284C7', icon: 'cart' },
-  { id: '6', store: 'Dia Supermercados', date: '05/05/2024', total: 'R$ 89,90', items: 4, color: '#E11D48', icon: 'storefront' },
-];
+import { useFocusEffect } from '@react-navigation/native';
+import { getAllPurchases, PurchaseRecord } from '../database/dbHelper';
 
 export function PurchasesScreen() {
   const [activeFilter, setActiveFilter] = useState('Este mês');
+  const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
   const filters = ['Todas', 'Este mês', 'Mês passado'];
 
-  const totalGasto = 'R$ 968,90';
+  useFocusEffect(
+    useCallback(() => {
+      getAllPurchases().then(setPurchases);
+    }, [])
+  );
+
+  const totalGasto = useMemo(() => {
+    const total = purchases.reduce((acc, curr) => acc + (curr.total_value || 0), 0);
+    return `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }, [purchases]);
 
   return (
     <View style={styles.container}>
@@ -57,27 +50,37 @@ export function PurchasesScreen() {
       </View>
 
       {/* List */}
-      <FlatList
-        data={mockPurchases}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.purchaseCard}>
-            <View style={[styles.storeIcon, { backgroundColor: item.color + '20' }]}>
-              <Ionicons name={item.icon} size={22} color={item.color} />
-            </View>
-            <View style={styles.purchaseInfo}>
-              <Text style={styles.storeName}>{item.store}</Text>
-              <Text style={styles.storeDate}>{item.date}</Text>
-            </View>
-            <View style={styles.purchaseRight}>
-              <Text style={styles.purchaseTotal}>{item.total}</Text>
-              <Text style={styles.purchaseItems}>{item.items} itens {'>'}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+      {purchases.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="receipt-outline" size={64} color="#1E2740" />
+          <Text style={styles.emptyTitle}>Nenhuma compra</Text>
+          <Text style={styles.emptySub}>Suas notas escaneadas aparecerão aqui.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={purchases}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.purchaseCard}>
+              <View style={[styles.storeIcon, { backgroundColor: '#1E40AF20' }]}>
+                <Ionicons name="cart" size={22} color="#60A5FA" />
+              </View>
+              <View style={styles.purchaseInfo}>
+                <Text style={styles.storeName}>{item.store_name}</Text>
+                <Text style={styles.storeDate}>{item.issue_date}</Text>
+              </View>
+              <View style={styles.purchaseRight}>
+                <Text style={styles.purchaseTotal}>
+                  R$ {(item.total_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Text>
+                <Text style={styles.purchaseItems}>{item.items_count || 0} itens {'>'}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -145,6 +148,25 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 20,
     paddingBottom: 100,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    marginTop: 40,
+  },
+  emptyTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  emptySub: {
+    color: '#94A3B8',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
   },
   purchaseCard: {
     flexDirection: 'row',

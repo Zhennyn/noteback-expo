@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { getSummaryStats, PurchaseStats } from '../database/dbHelper';
 
 export function HomeScreen() {
   const navigation = useNavigation<any>();
+  const [stats, setStats] = useState<PurchaseStats>({ totalCompras: 0, totalGasto: 0 });
+
+  useFocusEffect(
+    useCallback(() => {
+      getSummaryStats().then(setStats);
+    }, [])
+  );
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -40,13 +48,15 @@ export function HomeScreen() {
         <View style={styles.summaryStats}>
           <View style={styles.statItem}>
             <Ionicons name="bag-handle-outline" size={28} color="#60A5FA" />
-            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statValue}>{stats.totalCompras}</Text>
             <Text style={styles.statLabel}>Compras{'\n'}realizadas</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statCurrency}>R$</Text>
-            <Text style={styles.statValue}>1.248,90</Text>
+            <Text style={styles.statValue}>
+              {stats.totalGasto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
             <Text style={styles.statLabel}>Total gasto</Text>
           </View>
           <View style={styles.statDivider} />
